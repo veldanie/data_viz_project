@@ -10,7 +10,7 @@
 	</head>
 	<body>
 		<h2>GLOBAL FINANCIAL CRISIS. <b>2007 - 2008 </b></h2>
-		<p>The global financial crisis started at the beginning of 2007 with a crisis in the US subprime mortgage market, and extended to the international banking system. The following dynamic chart exhibits key indicators in the period between March 2007 and December 2010. The green dots (left axis) correspond to the <strong>S&P 500 index </strong> which is a stock market index. The red dots (right axis) correspond to the <strong>VIX index </strong>  which a (implied) volatility index constructed from option prices. This last index can be interpreted as a measure of financial risk. The chart dinamically shows the value of each index for each date. Additionally, the orange circles correspond to important events that ocurred during the period under analysis. As the user rolls the mouse over these circles a description of the event appears. </p>
+		<p>The global financial crisis started at the beginning of 2007 with a crisis in the US subprime mortgage market, and extended to the international banking system. The following dynamic chart exhibits key indicators in the period between March 2007 and December 2010. The green dots (left axis) correspond to the <strong>S&P 500 index </strong> which is a stock market index. The red dots (right axis) correspond to the <strong>VIX index </strong>  which is a volatility index constructed from option prices. This last index can be interpreted as a measure of financial risk. The chart dinamically shows the value of each index for each date. Additionally, the orange circles correspond to important events that ocurred during the period under analysis. As the user rolls the mouse over these circles a description of the event appears. </p>
 
 		
 		<!-- Box with events description -->		
@@ -260,7 +260,7 @@
 			//Add second paragraph.
 			d3.select("body")
 				.append("p")
-				.text("The next visualization exhbits the behavior of the Real GDP Per Capita between 2005 and 2010 for some important economies across the globe. In particular we analyze United States (blue), United Kingdom (gray), Brazil (green) and China (red). In order to asses the performance of each country, we initialize an index to 0 for 2005, and update it every year with the percentage variation of the Real GDP Per Capita of the corresponding country. The size of the circle enphasize the differences between GDP Per Capita among the different countries contries. During the financial crisis, the most affected economies were Unites States and United Kingdom. China's economy manteined an upward trend, however, there exists significan differences between the Real GDP Per Capita of United States of United Kingdom with respect to countries such as Brazil and China. As the user rolls the mouse over the circle the values inside box are updated.");
+				.text("The next visualization exhibits the behavior of the Real GDP Per Capita between 2005 and 2010 for some important economies across the globe. In particular we analyze United States (blue), United Kingdom (gray), Brazil (green) and China (red). In order to asses the performance of each country, we initialize an index to 100 for 2005, and update it every year with the percentage variation of the Real GDP Per Capita of the corresponding country. The size of the circles associated with each country enphasize the differences between GDP Per Capita among the different countries. During the financial crisis, the most affected economies were United States and United Kingdom. China's economy maintained an upward trend, however, there exists significant differences between the Real GDP Per Capita of United States and United Kingdom with respect to countries such as Brazil and China. As the user rolls the mouse over the circles the values in the box are updated.");
 			
 			//Add second SVG object
 			var svg2 = d3.select("body")
@@ -370,7 +370,7 @@
 	</body>
 	<footer>
   <br><br>
-  Data sources: World Bank, CBOE (Chicago Boar Options Exchange)<br>
+  Data sources: World Bank, CBOE (Chicago Boar Options Exchange), finance.yahoo.com, www.usatoday.com, www.theguardian.com<br>
   Daniel Velásquez Vergara <a href="mailto:daniel.velasquez@barcelonagse.eu">daniel.velasquez@barcelonagse.eu</a>
   <br><br>
  </footer>
