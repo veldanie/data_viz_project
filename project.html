@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF8">
+		<title>Project - Data Visualization</title>
+		<script type="text/javascript" src="d3/d3.js"></script>
+		<link rel="stylesheet" href="style.css">
+		<h1>Data Visualization Project</h1>
+		<h2>Daniel Velasquez Vergara</h2>
+	</head>
+	<body>
+		<h2>GLOBAL FINANCIAL CRISIS. <b>2007 - 2008 </b></h2>
+		<p>The global financial crisis started at the beginning of 2007 with a crisis in the US subprime mortgage market, and extended to the international banking system. The following dynamic chart exhibits key indicators in the period between March 2007 and December 2010. The green dots (left axis) correspond to the <strong>S&P 500 index </strong> which is a stock market index. The red dots (right axis) correspond to the <strong>VIX index </strong>  which a (implied) volatility index constructed from option prices. This last index can be interpreted as a measure of financial risk. The chart dinamically shows the value of each index for each date. Additionally, the orange circles correspond to important events that ocurred during the period under analysis. As the user rolls the mouse over these circles a description of the event appears. </p>
+
+		
+		<!-- Box with events description -->		
+		<div id="tooltip" class="hidden">
+		<p><strong>Date:</strong> <span id="date"></span></p>
+			<p><span id="value"></span></p>
+		</div>
+
+		<!-- Box with GDP per Capita information -->
+		<div id="tooltipp" class="hidden">
+			<p><strong>Year:</strong>  <span id="year"></span></p>
+
+			<p><strong>Country:</strong>  <span id="country"></span></p>
+
+			<p><strong>GDP Per Capita</strong> (constant 2010 US$): <span id="value"></span></p>
+		</div>
+
+		<!-- Box with index prices -->
+		<div id="tick" class="hidden">
+			<p><strong>Date:</strong> <span id="date"></span></p>
+			<p><strong>S&P 500:</strong> <span id="value"></span></p>
+			<p><strong>VIX:</strong> <span id="vix"></span></p>
+		</div>
+
+		<script type="text/javascript">
+
+			//Width, height, padding and date format
+			var w = 1100;
+			var h = 550;
+			var padding = 50;
+			var format = d3.time.format('%Y-%m-%d');
+
+			//Create first SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			
+			//Read dataset
+			var dataset;
+			d3.csv('data/spx.csv', function(data){ 
+				data.forEach(function(d){
+					d.Value = +d.Value;
+					d.Alert = +d.Alert;
+					d.Dates = format.parse(d.Dates);
+					d.Vix = +d.Vix;
+				});
+				console.log(data);
+				dataset = data;
+							
+				//Plot scales
+				var xScale = d3.scale.ordinal()
+							.domain(d3.range(dataset.length))
+							.rangeRoundBands([0, w], 0.05);
+
+				var xAxisScale = d3.time.scale()
+					        .domain([d3.min(dataset, function(d) { return d.Dates}), d3.max(dataset, function(d) { return d.Dates})])
+							.range([padding, w - padding]); 
+		    
+				var yScale = d3.scale.linear()
+							.domain([d3.min(dataset, function(d) { return +d.Value-100}), d3.max(dataset, function(d) { return +d.Value})])
+							.range([padding, h - padding]);
+
+				var yScale2 = d3.scale.linear()
+							.domain([d3.min(dataset, function(d) { return +d.Vix-2}), d3.max(dataset, function(d) { return +d.Vix})])
+							.range([padding, h - padding]);
+
+				var yAxisScale = d3.scale.linear()
+							.domain([d3.min(dataset, function(d) { return +d.Value-100}), d3.max(dataset, function(d) { return +d.Value})])
+							.range([h - padding, padding]);
+				
+				var yAxisScale2 = d3.scale.linear()
+							.domain([d3.min(dataset, function(d) { return +d.Vix-2}), d3.max(dataset, function(d) { return +d.Vix})])
+							.range([h - padding, padding]);
+				
+				var colScale = d3.scale.linear()
+							.domain([d3.min(dataset, function(d) { return +d.Value}), d3.max(dataset, function(d) { return +d.Value})])
+							.range([0, 255]);
+				
+				//Define Y and X axis
+				var yAxis = d3.svg.axis()	
+							 .scale(yAxisScale)
+							 .orient("left")
+							 .ticks(5);
+				
+				var yAxis2 = d3.svg.axis()	
+							 .scale(yAxisScale2)
+							 .orient("right")
+							 .ticks(5);
+				
+				var xAxis = d3.svg.axis()
+							.scale(xAxisScale)							
+    						.orient("bottom")
+    						.ticks(10)
+    						.tickFormat(d3.time.format("%b-%Y"));
+
+				//Create (hidden) bars that apper when the mouse rolls over
+				svg.selectAll("rect")
+			   		.data(dataset)
+			   		.enter()
+			   		.append("rect")
+			   		.attr("x", function(d, i) {
+			   			return xScale(i);
+			   		})
+			   		.attr("y", function(d) {
+			   			return h - yScale(d.Value);
+			   		})
+			   		.attr("width", 5*xScale.rangeBand())
+			   		.attr("height", function(d) {
+			   			return yScale(d.Value) - padding;
+			   		})
+			   		.attr("fill", "white")
+			   		.on("mouseover", function(d) {		
+			   			//Update the tick date and indexes values			   	
+			   			d3.select("#tick")
+							.select("#date")
+							.text(d.Dates.toDateString());
+						
+						d3.select("#tick")
+							.select("#value")
+							.text(d.Value);
+
+						d3.select("#tick")
+							.select("#vix")
+							.text(d.Vix);	
+						//Show the tick:
+						d3.select("#tick").classed("hidden", false);
+
+			   		})
+			   		.on("mouseout", function(d) {
+			   			d3.select("#tick").classed("hidden", true);
+			   		});
+					
+			   	//Create points SP500. Those points for which there is an event associated have different size and color.
+
+				svg.selectAll("circle")
+			   		.data(dataset)
+			   		.enter()
+			   		.append("circle")
+			   		.attr("cx", function(d, i) {
+			   			return xScale(i);
+			   		})
+			   		.attr("cy", function(d) {
+			   			return h - yScale(d.Value);
+			   		})
+			   		.attr("r", function(d){
+			   			if(d.Alert == 1){
+			   				return '15';
+			   			} else {
+			   				return '2';
+			   			}
+			   		})
+			   		.attr("fill", function(d) {
+			   			if(d.Alert == 1) {
+			   				return "orange"; 
+			   			} else {
+							return "rgb(0," + (d3.round(colScale(d.Value),0)) + ",0)";
+						}
+			   		})
+			   		.attr("fill-opacity", function(d) {
+			   			if(d.Alert == 1) {
+			   				return "0.3"
+			   			} else {
+							return "none";
+						}
+			   		})			   		
+			   		.attr("stroke", function(d) {
+			   			if(d.Alert == 1) {
+			   				return "firebrick"
+			   			} else {
+							return "none";
+						}
+			   		})
+			   		.attr("stroke-opacity", function(d) {
+			   			if(d.Alert == 1) {
+			   				return "0.2"
+			   			} else {
+							return "none";
+						}
+			   		})
+			   		.on("mouseover", function(d) {
+
+						//Get this bar's x/y values, then augment for the tooltip
+						var xPosition = parseFloat(d3.select(this).attr("cx")) + xScale.rangeBand() / 2;
+						var yPosition = parseFloat(d3.select(this).attr("cy")) / 2 + h / 2;
+					
+						//Update the tooltip position and value
+						d3.select("#tooltip")						
+							.select("#date")
+							.text(d.Dates.toDateString());
+			   			d3.select("#tooltip")
+			   				.select("#value")
+							.text(d.Event);
+							
+						d3.select("#tooltip")
+							.style("left", xPosition + "px")
+							.style("top", yPosition + "px")						
+							
+						//Show the tooltip
+						if(d.Alert == 1) {
+						d3.select("#tooltip").classed("hidden", false);
+						};
+
+			   		})
+			   		.on("mouseout", function(d) {
+			   
+						//Hide the tooltip
+						d3.select("#tooltip").classed("hidden", true);
+					});
+					
+
+			   	//Create points VIX Index. 
+				svg.selectAll("ellipse")
+			   		.data(dataset)
+			   		.enter()
+			   		.append("ellipse")
+			   		.attr("cx", function(d, i) {
+			   			return xScale(i);
+			   		})
+			   		.attr("cy", function(d) {
+			   			return h - yScale2(d.Vix);
+			   		})
+			   		.attr("rx", '2')
+			   		.attr("ry", '2')
+			   		.attr("fill", 'red')
+			   		.attr("fill-opacity", "0.3");
+
+			   	//Add the axis to the plot.	
+				svg.append("g")
+        			.attr("class", "axis")
+        			.attr("transform", "translate(0," + (h - padding) + ")")
+        			.call(xAxis)
+        			
+				svg.append("g")
+					.attr("class", "axis")
+					.attr("transform", "translate(" + padding + ",0)")
+					.call(yAxis);
+
+				svg.append("g")
+					.attr("class", "axis")
+					.attr("transform", "translate(" + (w - padding) + ",0)")
+					.call(yAxis2);					   
+			});
+			
+			
+
+			//Add second paragraph.
+			d3.select("body")
+				.append("p")
+				.text("The next visualization exhbits the behavior of the Real GDP Per Capita between 2005 and 2010 for some important economies across the globe. In particular we analyze United States (blue), United Kingdom (gray), Brazil (green) and China (red). In order to asses the performance of each country, we initialize an index to 0 for 2005, and update it every year with the percentage variation of the Real GDP Per Capita of the corresponding country. The size of the circle enphasize the differences between GDP Per Capita among the different countries contries. During the financial crisis, the most affected economies were Unites States and United Kingdom. China's economy manteined an upward trend, however, there exists significan differences between the Real GDP Per Capita of United States of United Kingdom with respect to countries such as Brazil and China. As the user rolls the mouse over the circle the values inside box are updated.");
+			
+			//Add second SVG object
+			var svg2 = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			
+			//Load the dataset		
+			d3.csv('data/gdp.csv', function(data){ 
+				console.log(data);
+				dataset = data;
+							
+				//Scales
+				var xScale = d3.scale.linear()
+							.domain([d3.min(dataset, function(d) { return +d.IndYear}), d3.max(dataset, function(d) { return +d.IndYear})])							
+							.range([padding, w - padding], 0.05);
+
+				var yScale = d3.scale.linear()
+							.domain([d3.min(dataset, function(d) { return +d.Index-5}), d3.max(dataset, function(d) { return +d.Index})])
+							.range([padding, h - padding]);
+
+				var yAxisScale = d3.scale.linear()
+							.domain([d3.min(dataset, function(d) { return +d.Index-5}), d3.max(dataset, function(d) { return +d.Index})])
+							.range([h - padding, padding]);
+								
+				var colScale = d3.scale.linear()
+							.domain([d3.min(dataset, function(d) { return +d.GDP}), d3.max(dataset, function(d) { return +d.GDP})])
+							.range([0, 255]);
+				
+				//Define axis
+				var yAxis = d3.svg.axis()	
+							 .scale(yAxisScale)
+							 .orient("left")
+							 .ticks(5);
+				
+				var xAxis = d3.svg.axis()
+							.scale(xScale)							
+    						.orient("bottom")    			
+    						.ticks(5)
+    							   		
+
+				//Create variables that are later used to define the size of the circles
+				var min_gdp = d3.min(dataset, function(d) { return +d.GDP})
+				var max_gdp = d3.max(dataset, function(d) { return +d.GDP})
+				var spr_gdp = max_gdp - min_gdp
+
+				//Create circel for index. The size depends on the GDP value.
+				svg2.selectAll("circle")
+			   		.data(dataset)
+			   		.enter()
+			   		.append("circle")
+			   		.attr("cx", function(d) {
+			   			return xScale(+d.IndYear);
+			   		})
+			   		.attr("cy", function(d) {
+			   			return h - yScale(+d.Index);
+			   		})			   		
+			   		.attr("r", function(d){
+			   			return 10 + 40*(+d.GDP - min_gdp)/spr_gdp
+			   		})
+			   		.attr("fill", function(d){
+			   			if(d.Country=='USA'){
+			   				return "blue";
+			   			}else if(d.Country=='China'){
+			   				return "red";
+			   			}else if(d.Country=='Brazil'){
+			   				return "green";
+			   			}else if(d.Country=='UnitedKingdom'){
+			   				return "black";
+			   			}
+			   		})
+			   		.attr("opacity", 0.3)
+			   		.on("mouseover", function(d) {
+
+					//Update the tooltip position and value
+						d3.select("#tooltipp")
+			   				.select("#country")
+							.text(d.Country);
+						d3.select("#tooltipp")
+			   				.select("#value")
+							.text(+d.GDP);
+						d3.select("#tooltipp")
+			   				.select("#year")
+							.text(d.IndYear);
+						
+						//Show the tooltip
+						
+						d3.select("#tooltipp").classed("hidden", false);
+
+			   		})
+				
+				//Add axis to second plot					
+				svg2.append("g")
+        			.attr("class", "axis")
+        			.attr("transform", "translate(0," + (h - padding) + ")")
+        			.call(xAxis)
+        			
+				svg2.append("g")
+					.attr("class", "axis")
+					.attr("transform", "translate(" + padding + ",0)")
+					.call(yAxis);
+
+			});
+				
+
+		</script>
+	</body>
+	<footer>
+  <br><br>
+  Data sources: World Bank, CBOE (Chicago Boar Options Exchange)<br>
+  Daniel Velásquez Vergara <a href="mailto:daniel.velasquez@barcelonagse.eu">daniel.velasquez@barcelonagse.eu</a>
+  <br><br>
+ </footer>
+</html>
